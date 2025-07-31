@@ -13,13 +13,18 @@ TEMPLATE_DIR = os.path.join(os.path.dirname(__file__), "templates")
 load_dotenv()
 MASTER_PASSWORD = os.getenv("MASTER_PASSWORD")
 
+
+def log(text):
+    print(f"{datetime.datetime.now().strftime('%H:%M:%S')} | {text}")
+
 @app.hook("before_request")
 def check_auth():
-    if request.path in ["/login", "/favicon.ico"]:
+    if request.path in ["/login", "/favicon.ico", "/manifest.json"]:
         return
 
     if request.get_cookie("logged_in") != "true":
         redirect("/login")
+
 
 
 @app.route("/login")
@@ -28,6 +33,9 @@ def login():
     <!DOCTYPE html>
     <html>
     <head>
+        <link rel="manifest" href="/manifest.json">
+        <meta name="theme-color" content="#3b82f6">
+        <link rel="icon" href="/static/icon-192.png" type="image/png" sizes="192x192">
         <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
         <meta charset="UTF-8">
         <title>Login – PocketGlide</title>
@@ -53,6 +61,7 @@ def login_post():
     password = request.forms.get("password")
     if password == MASTER_PASSWORD:
         response.set_cookie("logged_in", "true", path="/", max_age=60*60*24*30)
+        log(f"new login from {request.remote_addr}")
         redirect("/")
     else:
         return "<script>alert('Wrong password'); window.location.href='/login';</script>"
@@ -61,6 +70,15 @@ def login_post():
 @app.route('/favicon.ico')
 def favicon():
     return static_file("favi.ico", root="./static")
+
+@app.route('/manifest.json')
+def manifest():
+    return static_file("manifest.json", root="./static")
+
+@app.route('/static/<filename>')
+def static_render(filename):
+    return static_file(filename, root="./static")
+
 
 
 @app.route("/")
@@ -116,7 +134,7 @@ def add_flight():
         "airport": airport
     })
 
-    print(new_airtime)
+    log(f"flight on {date} with {plane['registration']} added")
 
     redirect("/")
 
@@ -132,8 +150,15 @@ def add_plane():
         "airtime": 0
     })
 
-    print(f"{registration} added!")
+    log(f"plane {registration} {type} added")
 
     redirect("/")
+
+@app.get("/delete/<flight_id:int>")
+def delete_flight(flight_id):
+    log(f"flight {flight_id} removed")
+    db.remove(doc_ids=[flight_id])
+    redirect("/")
+
 
 run(app, host="0.0.0.0", port=8082)

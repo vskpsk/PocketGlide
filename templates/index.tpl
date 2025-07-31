@@ -5,6 +5,13 @@
     <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
     <meta charset="UTF-8">
     <script src="https://cdn.tailwindcss.com"></script>
+
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#ffffff">
+    <link rel="icon" href="/static/icon-192.png" type="image/png" sizes="192x192">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+
 </head>
 <body class="bg-white text-gray-900 font-sans max-w-4xl mx-auto p-4">
 
@@ -44,7 +51,7 @@
 
             <div class="flex items-center">
             <input name="hours" type="number" min="0" placeholder="h"
-                    class="border px-2 py-1 rounded w-[60px]" required>
+                    class="border px-2 py-1 rounded w-[60px]">
             <span class="px-1 text-gray-600">:</span>
             <input name="minutes" type="number" min="0" max="59" placeholder="m"
                     class="border px-2 py-1 rounded w-[60px]" required>
@@ -78,7 +85,12 @@
         <span class="bg-blue-100 text-blue-800 text-xs font-semibold px-2 py-1 rounded">
             {{(flight['airtime'] // 60)}}h {{(flight['airtime'] % 60)}}m
         </span>
-        </div>
+                <a href="/delete/{{flight.doc_id}}" 
+        class="text-red-500 hover:text-red-700 text-xs font-semibold ml-4">
+        ❌
+        </a>
+
+    </div>
 
     </div>
     % end

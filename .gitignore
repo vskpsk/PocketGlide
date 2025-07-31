@@ -1,8 +1,11 @@
 venv/
 .env
 __pycache__/
+data/
+dumb_flights.py
 *.pyc
 *.pyo
 *.pyd
 *.log
 *.tmp
+nohup.out

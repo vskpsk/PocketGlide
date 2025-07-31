@@ -1,7 +1,9 @@
-
 # PocketGlide
 
 PocketGlide is a simple, web-based logbook for glider pilots.  It runs on Python using Bottle and TinyDB
+
+### Update log
+v1.1 Standalone web-app for phones. Added remove function for flights. new logs
 
 ## Basic functions
 
