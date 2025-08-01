@@ -13,10 +13,12 @@
 
 
 </head>
+
 <body class="bg-white text-gray-900 font-sans max-w-4xl mx-auto p-4">
 
-    <h1 class="text-3xl font-bold mb-6 text-center tracking-wide">PocketGlide</h1>
+    <script src="/static/script.js?v=123"></script>
 
+    <h1 class="text-3xl font-bold mb-6 text-center tracking-wide">PocketGlide</h1>
 
     <div class="flex flex-wrap justify-center gap-4 mb-6">
         <div class="bg-blue-100 text-blue-800 px-4 py-2 rounded-full text-sm font-semibold shadow-sm">
@@ -30,8 +32,6 @@
         <div class="bg-purple-100 text-purple-800 px-4 py-2 rounded-full text-sm font-semibold shadow-sm">
             📆 {{stats["this_month"]}} flights this month
         </div>
-
-
     </div>
 
 
@@ -61,37 +61,78 @@
             <input name="airport" type="text" placeholder="ICAO" 
                 class="border px-2 py-1 rounded w-[100px]" required>
 
+            <input name="task" type="text" placeholder="Task" 
+                class="border px-2 py-1 rounded w-[100px]">
+
+            <input name="note" type="text" placeholder="Notes" 
+                class="border px-2 py-1 rounded w-[400px]">
+
             <button type="submit" 
                     class="bg-blue-600 text-white px-4 py-1 rounded hover:bg-blue-700">ADD</button>
 
         </form>
     </div>
 
+    <div id="addPlaneForm" class="hidden bg-gray-50 border border-gray-200 rounded-xl p-2 mb-8 shadow-sm">
+        <form action="/add_plane" method="post" class="flex flex-wrap items-center gap-4 justify-center">
+            <input name="type" type="text" placeholder="Type" 
+                class="border px-2 py-1 rounded w-[300px]" required>
+            
+            <input name="registration" type="text" placeholder="Registration" 
+                class="border px-2 py-1 rounded w-[150px]" required>
+
+            <button type="submit" 
+                    class="bg-blue-600 text-white px-4 py-1 rounded hover:bg-blue-700">Create</button>
+
+        </form>
+    </div>
+
     
     <div class="bg-gray-50 border border-gray-200 rounded-xl p-6 shadow-sm
-                space-y-2 h-[calc(83vh-140px)] overflow-y-auto pt-0 px-6 pb-6">
+                space-y-2 h-[calc(75vh-160px)] overflow-y-auto pt-0 px-6 pb-6">
     <h2 class="text-xl font-semibold mb-4 text-center sticky top-0 bg-gray-50 z-10 w-full py-2">Flight Log</h2>
 
     % for flight in flights:
+    <div id="row-{{flight.doc_id}}">
     <div class="flex justify-between items-center border-b pb-2 text-sm text-gray-800">
 
-        <div class="flex flex-col sm:flex-row sm:items-baseline sm:gap-3">
-        <span class="font-mono text-gray-600">{{flight['date']}}</span>
-        <span class="font-medium">{{flight['aircraft']}}</span>
-        <span class="text-gray-500">{{flight['airport']}}</span>
+
+        <div class="flex items-baseline gap-3 min-w-[220px]">
+            <span class="font-mono text-gray-600">{{flight['date']}}</span>
+            <span class="font-medium">{{flight['aircraft']}}</span>
+            <span class="text-gray-500">{{flight['airport']}}</span>
         </div>
 
-        <div class="text-right">
-        <span class="bg-blue-100 text-blue-800 text-xs font-semibold px-2 py-1 rounded">
+
+        <div class="text-center w-[100px] text-xs text-gray-600 italic truncate">
+            % if flight.get("task"):
+            {{flight['task']}}
+            % end
+        </div>
+
+
+        <div class="text-left flex-1 text-xs text-gray-400 italic truncate px-2">
+            % if flight.get("notes"):
+            {{flight['notes']}}
+            % end
+        </div>
+
+        
+
+        <div class="text-right min-w-[100px]">
+            <span class="bg-blue-100 text-blue-800 text-xs font-semibold px-2 py-1 rounded">
             {{(flight['airtime'] // 60)}}h {{(flight['airtime'] % 60)}}m
-        </span>
-                <a href="/delete/{{flight.doc_id}}" 
-        class="text-red-500 hover:text-red-700 text-xs font-semibold ml-4">
-        ❌
-        </a>
+            </span>
+
+            <a href="#" onclick="enableEdit('{{flight.doc_id}}')" class="text-gray-500 hover:text-gray-700 text-xs font-semibold ml-2">✏️</a>
+
+            <a href="/delete/{{flight.doc_id}}" 
+            class="text-red-500 hover:text-red-700 text-xs font-semibold ml-4">
+            ❌
+            </a>
+        </div>
 
     </div>
-
     </div>
     % end
     </div>
@@ -106,19 +147,7 @@
 
 
 
-    <div id="addPlaneForm" class="hidden bg-gray-50 border border-gray-200 rounded-xl p-2 mb-8 shadow-sm">
-        <form action="/add_plane" method="post" class="flex flex-wrap items-center gap-4 justify-center">
-            <input name="type" type="text" placeholder="Type" 
-                class="border px-2 py-1 rounded w-[200px]" required>
-            
-            <input name="registration" type="text" placeholder="Registration" 
-                class="border px-2 py-1 rounded w-[100px]" required>
 
-            <button type="submit" 
-                    class="bg-blue-600 text-white px-4 py-1 rounded hover:bg-blue-700">Create</button>
-
-        </form>
-    </div>
 
     <script>
         function toggleAddPlane() {
@@ -127,10 +156,5 @@
         }
     </script>
     
-
-
-
-
-
 </body>
 </html>

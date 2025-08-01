@@ -1,11 +1,10 @@
 venv/
 .env
-__pycache__/
 data/
-dumb_flights.py
+__pycache__/
+nohup.out
 *.pyc
 *.pyo
 *.pyd
 *.log
 *.tmp
-nohup.out

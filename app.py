@@ -8,14 +8,18 @@ app = Bottle()
 db = TinyDB("./data/flights.json")
 planes = TinyDB("./data/planes.json")
 
-TEMPLATE_DIR = os.path.join(os.path.dirname(__file__), "templates")
-
 load_dotenv()
+
+
+TEMPLATE_DIR = os.path.join(os.path.dirname(__file__), "templates")
 MASTER_PASSWORD = os.getenv("MASTER_PASSWORD")
+
 
 
 def log(text):
     print(f"{datetime.datetime.now().strftime('%H:%M:%S')} | {text}")
+
+
 
 @app.hook("before_request")
 def check_auth():
@@ -27,33 +31,25 @@ def check_auth():
 
 
 
+@app.route('/favicon.ico')
+def favicon():
+    return static_file("favi.ico", root="./static")
+
+@app.route('/manifest.json')
+def manifest():
+    return static_file("manifest.json", root="./static")
+
+@app.route('/static/<filename>')
+def static_render(filename):
+    return static_file(filename, root="./static")
+
+
+
+
+
 @app.route("/login")
 def login():
-    return """
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <link rel="manifest" href="/manifest.json">
-        <meta name="theme-color" content="#3b82f6">
-        <link rel="icon" href="/static/icon-192.png" type="image/png" sizes="192x192">
-        <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
-        <meta charset="UTF-8">
-        <title>Login – PocketGlide</title>
-        <script src="https://cdn.tailwindcss.com"></script>
-    </head>
-    <body class="bg-white text-gray-900 font-sans h-screen flex items-center justify-center">
-        <form method="post" class="bg-gray-50 border border-gray-200 rounded-xl shadow-sm p-6 w-full max-w-sm space-y-4">
-            <h1 class="text-xl font-semibold text-center">PocketGlide Login</h1>
-            <input type="password" name="password" placeholder="Enter password"
-                class="border px-3 py-2 rounded w-full text-sm" required>
-            <button type="submit"
-                class="bg-blue-600 text-white px-4 py-2 rounded w-full hover:bg-blue-700 text-sm">
-                Login
-            </button>
-        </form>
-    </body>
-    </html>
-    """
+    return template("login", template_lookup=[TEMPLATE_DIR])
 
 
 @app.post('/login')
@@ -67,17 +63,6 @@ def login_post():
         return "<script>alert('Wrong password'); window.location.href='/login';</script>"
     
 
-@app.route('/favicon.ico')
-def favicon():
-    return static_file("favi.ico", root="./static")
-
-@app.route('/manifest.json')
-def manifest():
-    return static_file("manifest.json", root="./static")
-
-@app.route('/static/<filename>')
-def static_render(filename):
-    return static_file(filename, root="./static")
 
 
 
@@ -114,6 +99,9 @@ def index():
 def add_flight():
     date = request.forms.get("date")
     airport = request.forms.get("airport")
+    task = request.forms.get("task") or None
+
+    notes = request.forms.get("note") or None
 
     hours = request.forms.get("hours") or 0
     minutes = request.forms.get("minutes") or 0
@@ -131,7 +119,10 @@ def add_flight():
         "date": date,
         "airtime": airtime,
         "aircraft": f"{plane['type']} ({plane['registration']})",
-        "airport": airport
+        "task": task,
+        "airport": airport,
+
+        "notes": notes
     })
 
     log(f"flight on {date} with {plane['registration']} added")
@@ -161,4 +152,28 @@ def delete_flight(flight_id):
     redirect("/")
 
 
-run(app, host="0.0.0.0", port=8082)
+@app.get("/get_flight/<flight_id:int>")
+def get_flight(flight_id):
+    flight = db.get(doc_id=flight_id)
+    if not flight:
+        response.status = 404
+        return {"error": "Not found"}
+    response.content_type = 'application/json'
+    return flight
+
+
+@app.post("/edit/<flight_id:int>")
+def edit(flight_id):
+    db.update({
+        "date": request.forms.get("date"),
+        "aircraft": request.forms.get("aircraft"),
+        "airport": request.forms.get("airport"),
+        "task": request.forms.get("task") or None,
+        "notes": request.forms.get("note") or None,
+        "airtime": int(request.forms.get("airtime") or 0)
+    }, doc_ids=[flight_id])
+    redirect("/")
+
+
+
+run(app, host="0.0.0.0", port=7000)
